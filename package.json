@@ -1,0 +1,31 @@
+{
+  "name": "preserve-search-params-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Monorepo for preserve-search-params and its framework adapters",
+  "license": "MIT",
+  "packageManager": "pnpm@10.6.5",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "lint-fix": "turbo run lint-fix",
+    "tsc": "turbo run tsc",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "turbo run build && changeset publish"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@changesets/cli": "2.31.0",
+    "turbo": "2.9.6",
+    "typescript": "5.8.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+  }
+}

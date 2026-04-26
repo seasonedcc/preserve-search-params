@@ -1,0 +1,55 @@
+{
+  "name": "@preserve-search-params/next",
+  "version": "0.1.0",
+  "description": "Next.js adapter for preserve-search-params (App Router and Pages Router)",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["README.md", "./dist/*"],
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf dist && tsup ./src/index.ts --format esm,cjs --dts --external react --external next",
+    "dev": "tsup ./src/index.ts --format esm,cjs --watch --dts --external react --external next",
+    "tsc": "tsc",
+    "test": "vitest run",
+    "lint": "biome check --error-on-warnings",
+    "lint-fix": "biome check --write --error-on-warnings"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seasonedcc/preserve-search-params.git",
+    "directory": "packages/next"
+  },
+  "bugs": {
+    "url": "https://github.com/seasonedcc/preserve-search-params/issues"
+  },
+  "homepage": "https://github.com/seasonedcc/preserve-search-params#readme",
+  "keywords": ["next", "nextjs", "search-params", "url", "preservation"],
+  "author": "Daniel Weinmann",
+  "dependencies": {
+    "preserve-search-params": "workspace:*"
+  },
+  "peerDependencies": {
+    "next": ">=14",
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@types/react": "19.2.14",
+    "jsdom": "29.0.2",
+    "next": "16.2.4",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "tsup": "8.5.1",
+    "vitest": "4.1.5"
+  }
+}

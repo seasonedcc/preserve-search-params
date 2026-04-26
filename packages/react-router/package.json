@@ -1,0 +1,55 @@
+{
+  "name": "@preserve-search-params/react-router",
+  "version": "0.1.0",
+  "description": "React Router v7+ adapter for preserve-search-params",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["README.md", "./dist/*"],
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf dist && tsup ./src/index.ts --format esm,cjs --dts --external react --external react-router",
+    "dev": "tsup ./src/index.ts --format esm,cjs --watch --dts --external react --external react-router",
+    "tsc": "tsc",
+    "test": "vitest run",
+    "lint": "biome check --error-on-warnings",
+    "lint-fix": "biome check --write --error-on-warnings"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seasonedcc/preserve-search-params.git",
+    "directory": "packages/react-router"
+  },
+  "bugs": {
+    "url": "https://github.com/seasonedcc/preserve-search-params/issues"
+  },
+  "homepage": "https://github.com/seasonedcc/preserve-search-params#readme",
+  "keywords": ["react-router", "search-params", "url", "preservation"],
+  "author": "Daniel Weinmann",
+  "dependencies": {
+    "preserve-search-params": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-router": ">=7"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@types/react": "19.2.14",
+    "jsdom": "29.0.2",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-router": "7.14.2",
+    "tsup": "8.5.1",
+    "vitest": "4.1.5"
+  }
+}

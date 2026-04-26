@@ -1,0 +1,49 @@
+{
+  "name": "preserve-search-params",
+  "version": "0.1.0",
+  "description": "Zero-dependency, framework-agnostic helpers to preserve URL search params across navigations and form submissions",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["README.md", "./dist/*"],
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf dist && tsup ./src/index.ts --format esm,cjs --dts",
+    "dev": "tsup ./src/index.ts --format esm,cjs --watch --dts",
+    "tsc": "tsc",
+    "test": "vitest run",
+    "lint": "biome check --error-on-warnings",
+    "lint-fix": "biome check --write --error-on-warnings"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seasonedcc/preserve-search-params.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/seasonedcc/preserve-search-params/issues"
+  },
+  "homepage": "https://github.com/seasonedcc/preserve-search-params#readme",
+  "keywords": [
+    "url",
+    "search-params",
+    "querystring",
+    "preservation",
+    "navigation",
+    "filters",
+    "pagination"
+  ],
+  "author": "Daniel Weinmann",
+  "devDependencies": {
+    "tsup": "8.5.1",
+    "vitest": "4.1.5"
+  }
+}
