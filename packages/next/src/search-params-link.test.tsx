@@ -150,4 +150,45 @@ describe('SearchParamsLink', () => {
     expect(link).toHaveAttribute('data-custom')
     expect(link.getAttribute('href')).toContain('page=2')
   })
+
+  it('attaches a ref to the rendered <a>', () => {
+    const ref = React.createRef<HTMLAnchorElement>()
+    const current = new URLSearchParams()
+    render(
+      <SearchParamsLink
+        href="/items/123"
+        currentSearchParams={current}
+        ref={ref}
+      >
+        Open
+      </SearchParamsLink>
+    )
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement)
+  })
+
+  it('forwards a ref through to a custom component', () => {
+    const CustomLink = React.forwardRef<
+      HTMLAnchorElement,
+      { href: string; children?: React.ReactNode }
+    >(({ href, children, ...rest }, ref) => (
+      <a ref={ref} href={href} {...rest}>
+        {children}
+      </a>
+    ))
+    CustomLink.displayName = 'CustomLink'
+
+    const ref = React.createRef<HTMLAnchorElement>()
+    const current = new URLSearchParams()
+    render(
+      <SearchParamsLink
+        href="/items/123"
+        currentSearchParams={current}
+        component={CustomLink}
+        ref={ref}
+      >
+        Open
+      </SearchParamsLink>
+    )
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement)
+  })
 })

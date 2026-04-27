@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react'
-import type * as React from 'react'
+import * as React from 'react'
 import { describe, expect, it } from 'vitest'
 import { SearchParamsForm } from './search-params-form'
 
@@ -104,5 +104,42 @@ describe('SearchParamsForm', () => {
 
     expect(container.querySelector('form')).toHaveAttribute('data-custom')
     expect(readHidden(container)).toEqual([{ name: 'page', value: '2' }])
+  })
+
+  it('attaches a ref to the rendered <form>', () => {
+    const ref = React.createRef<HTMLFormElement>()
+    const current = new URLSearchParams()
+    render(
+      <SearchParamsForm action="/items" currentSearchParams={current} ref={ref}>
+        child
+      </SearchParamsForm>
+    )
+    expect(ref.current).toBeInstanceOf(HTMLFormElement)
+  })
+
+  it('forwards a ref through to a custom component', () => {
+    const CustomForm = React.forwardRef<
+      HTMLFormElement,
+      React.FormHTMLAttributes<HTMLFormElement>
+    >(({ children, ...props }, ref) => (
+      <form ref={ref} {...props}>
+        {children}
+      </form>
+    ))
+    CustomForm.displayName = 'CustomForm'
+
+    const ref = React.createRef<HTMLFormElement>()
+    const current = new URLSearchParams()
+    render(
+      <SearchParamsForm
+        action="/items"
+        currentSearchParams={current}
+        component={CustomForm}
+        ref={ref}
+      >
+        child
+      </SearchParamsForm>
+    )
+    expect(ref.current).toBeInstanceOf(HTMLFormElement)
   })
 })
