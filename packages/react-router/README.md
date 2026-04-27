@@ -147,28 +147,24 @@ function GoToObservations() {
 }
 ```
 
-### Submit through a fetcher
+### Render a custom Form component
 
-Use a fetcher when you want to revalidate data without leaving the current page (typical for inline filter chips, or pagination buttons that reload a list in place). Pass `fetcher.Form` via the polymorphic `component` prop.
+Pass `component` to swap the underlying Form with full prop inference. Required props from the custom component remain required at the call site.
 
 ```tsx
-import { useFetcher } from 'react-router'
+import { StyledForm } from '~/ui/styled-form'
 
-function ArchivedChip() {
-  const fetcher = useFetcher()
-  return (
-    <SearchParamsForm
-      action="/items"
-      component={fetcher.Form}
-      customValues={{ status: 'archived', page: null }}
-    >
-      <button type="submit">Archived</button>
-    </SearchParamsForm>
-  )
-}
+<SearchParamsForm
+  action="/items"
+  component={StyledForm}
+  variant="inline"
+>
+  <input type="text" name="q" />
+  <button type="submit">Search</button>
+</SearchParamsForm>
 ```
 
-If you don't want the current URL's params to flow into the fetcher submission, opt out explicitly with `preserve={[]}`.
+If `StyledForm` requires `variant`, the type-checker requires it here too. The mechanism is detailed below in [TypeScript: how the polymorphic `component` prop is typed](#typescript-how-the-polymorphic-component-prop-is-typed).
 
 ### Server-side `redirect()` after a mutation
 

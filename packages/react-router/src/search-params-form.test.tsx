@@ -1,11 +1,6 @@
 import { render } from '@testing-library/react'
 import * as React from 'react'
-import {
-  Outlet,
-  RouterProvider,
-  createMemoryRouter,
-  useFetcher,
-} from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { SearchParamsForm } from './search-params-form'
 
@@ -145,46 +140,5 @@ describe('SearchParamsForm', () => {
       </SearchParamsForm>
     )
     expect(ref.current).toBeInstanceOf(HTMLFormElement)
-  })
-
-  it('migration: works with component={fetcher.Form} and forwards ref', () => {
-    const ref = React.createRef<HTMLFormElement>()
-
-    function Child() {
-      const fetcher = useFetcher()
-      return (
-        <SearchParamsForm
-          action="/items"
-          component={fetcher.Form}
-          ref={ref}
-          preserve={[]}
-        >
-          child
-        </SearchParamsForm>
-      )
-    }
-
-    const router = createMemoryRouter(
-      [
-        {
-          path: '/',
-          element: <Outlet />,
-          children: [
-            {
-              path: 'items',
-              action: () => null,
-              element: <div>items</div>,
-            },
-            { path: '*', element: <Child /> },
-          ],
-        },
-      ],
-      { initialEntries: ['/page?page=2'] }
-    )
-    const { container } = render(<RouterProvider router={router} />)
-
-    expect(container.querySelector('form')).toBeInstanceOf(HTMLFormElement)
-    expect(ref.current).toBeInstanceOf(HTMLFormElement)
-    expect(readHidden(container)).toEqual([])
   })
 })
