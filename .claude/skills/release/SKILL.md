@@ -1,6 +1,6 @@
 ---
 name: release
-description: Release new versions of the preserve-search-params packages via Changesets. Consume pending changesets, run checks, commit, ask the user to publish, and create per-package GitHub releases. Use when the user mentions releasing, publishing, cutting a release, or shipping a new version.
+description: Release new versions of the preserve-search-params packages via Changesets. Analyze the diff, write the changeset, run checks, commit, ask the user to publish, and create per-package GitHub releases. Use when the user mentions releasing, publishing, cutting a release, or shipping a new version.
 metadata:
   internal: true
 ---
@@ -8,6 +8,8 @@ metadata:
 # Release
 
 Automate the release workflow for the `preserve-search-params` monorepo, which publishes three packages (`preserve-search-params`, `@preserve-search-params/next`, `@preserve-search-params/react-router`) using Changesets.
+
+The user does not know how to use Changesets and does not want to learn — drive the toolchain end-to-end on their behalf. They will simply say "release" or "ship a minor"; analyze the diff, decide the bumps, write the changeset, and proceed.
 
 ## Instructions
 
@@ -27,31 +29,84 @@ git checkout main && git pull
 
 **Never start a release from a feature branch.** Version bumps, commits, and tags must land on `main`.
 
-### 1. Inspect pending changesets
+### 1. Align pre mode, then ensure a changeset exists
 
-List pending changeset files (excluding `README.md`):
+#### 1a. Reconcile pre mode with the user's intent
 
-```bash
-ls .changeset/*.md 2>/dev/null | grep -v README
-```
-
-If no pending changesets exist, stop and tell the user to add one first with `pnpm changeset`. Do not invent versions or bump packages by hand — Changesets is the source of truth.
-
-Read each pending `.changeset/*.md` file. The frontmatter lists which packages will bump and at what level (patch/minor/major). Summarize for the user before proceeding so they can confirm the upcoming bumps.
-
-For **prerelease** flows (alpha/beta/rc), check whether the repo is already in pre mode:
+Check whether the repo is currently in pre mode:
 
 ```bash
 test -f .changeset/pre.json && cat .changeset/pre.json
 ```
 
-If the user asks for a prerelease and the repo is not in pre mode, run:
+Decide based on the user's wording:
+
+- "alpha" / "beta" / "rc" / "prerelease" → if not in pre mode, enter it:
+  ```bash
+  pnpm changeset pre enter alpha   # or beta / rc
+  ```
+  If already in pre mode with a different tag, tell the user and ask before switching (rare).
+- "stable" / "final" / no qualifier → if currently in pre mode, exit it:
+  ```bash
+  pnpm changeset pre exit
+  ```
+  The next `pnpm version` will then roll all accumulated prereleases into a single stable release.
+
+Edits to `.changeset/pre.json` (created or removed by the commands above) are part of the eventual release commit — do not commit or revert them separately.
+
+#### 1b. Reuse pending changesets if any exist
 
 ```bash
-pnpm changeset pre enter alpha   # or beta / rc
+ls .changeset/*.md 2>/dev/null | grep -vE 'README|pre\.json'
 ```
 
-Then continue. To exit prerelease later, run `pnpm changeset pre exit` and release again as a stable version.
+If one or more files are listed, read them and treat them as authoritative — a contributor may have added them as part of their PR. Skip to step 2.
+
+#### 1c. Otherwise, write the changeset from diff analysis
+
+For each of the three packages, find the last per-package tag and walk the diff:
+
+```bash
+# Repeat per package — pkg-prefix is one of:
+#   preserve-search-params
+#   @preserve-search-params/next
+#   @preserve-search-params/react-router
+git tag --list '<pkg-prefix>@*' --sort=-version:refname | head -1
+git log <last-tag>..HEAD --oneline -- packages/<pkg>/
+git diff <last-tag>..HEAD -- packages/<pkg>/src/index.ts packages/<pkg>/package.json
+```
+
+If the package has no prior tag, walk from the repo's first commit (`git rev-list --max-parents=0 HEAD`) and treat as the package's first release. While the package is below `1.0.0`, prefer minor bumps for new features and major bumps only for genuine breaking changes; once it crosses `1.0.0`, full semver applies.
+
+Read recent PR bodies in parallel to enrich your understanding:
+
+```bash
+gh pr list --search "is:merged base:main" --json number,title,author,mergedAt --limit 30
+gh pr view <number> --json body,title,files --jq '.title + "\n---\n" + .body'   # in parallel
+```
+
+For each package with commits since its last tag, decide a bump level:
+
+- **major** — peer/dependency requirement raised in a way that excludes prior versions; an export was removed or renamed in `src/index.ts`; a function signature or runtime behavior changed in a way that breaks existing callers.
+- **minor** — new export added to `src/index.ts`; new optional API surface; new framework adapter shipped.
+- **patch** — bug fix, internal refactor, dependency bump that does not restrict callers, JSDoc/type tweaks that ship with the package.
+
+If a package directory has no commits since its last tag, do not include it in the changeset.
+
+Write a single changeset file at `.changeset/<descriptive-kebab>.md` covering all bumped packages. Use a short, content-derived kebab-case name (e.g. `next-adapter-suspense-fix.md`):
+
+```markdown
+---
+"preserve-search-params": minor
+"@preserve-search-params/next": patch
+---
+
+Add support for X in the core API. Fix Y in the Next adapter.
+```
+
+The summary becomes the bullet in each affected package's `CHANGELOG.md`, so write it in user-facing language drawn from PR titles/bodies (or commit subjects when no PR is available).
+
+After writing the file, state the plan to the user in one sentence — e.g. "Bumping `preserve-search-params` to a minor and `@preserve-search-params/next` to a patch — proceeding to `pnpm version`." Do not stop for explicit y/n; the file is reversible until the commit in step 4. The user can interrupt if the heuristic was wrong.
 
 ### 2. Apply the version bump
 
