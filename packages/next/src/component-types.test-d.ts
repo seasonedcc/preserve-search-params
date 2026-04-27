@@ -1,5 +1,6 @@
 import type * as React from 'react'
 import { describe, expectTypeOf, it } from 'vitest'
+import * as adapter from './index'
 import type { SearchParamsFormProps } from './search-params-form'
 import type { SearchParamsLinkProps } from './search-params-link'
 import type { PropsOf } from './types'
@@ -97,5 +98,16 @@ describe('SearchParamsFormProps inference', () => {
     type Props = SearchParamsFormProps<CustomForm>
     expectTypeOf<Props>().toHaveProperty('variant')
     expectTypeOf<Props['variant']>().toEqualTypeOf<'a' | 'b'>()
+  })
+})
+
+describe('redirectPathWithSearchParams export', () => {
+  it('is reachable from the adapter entry with the expected signature', () => {
+    expectTypeOf(adapter.redirectPathWithSearchParams).parameters.toEqualTypeOf<
+      [Request, string, Parameters<typeof adapter.preserveSearchParams>[1]?]
+    >()
+    expectTypeOf(
+      adapter.redirectPathWithSearchParams
+    ).returns.toEqualTypeOf<string>()
   })
 })

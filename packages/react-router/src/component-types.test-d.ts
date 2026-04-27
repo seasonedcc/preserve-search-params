@@ -1,8 +1,15 @@
 import type * as React from 'react'
 import type { Link as RRLink } from 'react-router'
 import { describe, expectTypeOf, it } from 'vitest'
-import type { SearchParamsLinkProps } from './search-params-link'
+import * as adapter from './index'
+import type {
+  SearchParamsFormOwnProps,
+  SearchParamsFormProps,
+  SearchParamsLinkProps,
+  UseResolvedPathWithSearchParamsOptions,
+} from './index'
 import type { PropsOf } from './types'
+import type { useResolvedPathWithSearchParams } from './use-resolved-path-with-search-params'
 
 describe('PropsOf', () => {
   it('extracts props from a React component', () => {
@@ -68,5 +75,49 @@ describe('SearchParamsLinkProps inference', () => {
     >
     type Props = SearchParamsLinkProps<CustomLink>
     expectTypeOf<Props>().toHaveProperty('size')
+  })
+})
+
+describe('UseResolvedPathWithSearchParamsOptions', () => {
+  it('matches the hook signature', () => {
+    type HookOptions = NonNullable<
+      Parameters<typeof useResolvedPathWithSearchParams>[1]
+    >
+    expectTypeOf<UseResolvedPathWithSearchParamsOptions>().toEqualTypeOf<HookOptions>()
+  })
+
+  it('carries the preserve and customValues fields', () => {
+    expectTypeOf<UseResolvedPathWithSearchParamsOptions>().toHaveProperty(
+      'preserve'
+    )
+    expectTypeOf<UseResolvedPathWithSearchParamsOptions>().toHaveProperty(
+      'customValues'
+    )
+    expectTypeOf<UseResolvedPathWithSearchParamsOptions>().toHaveProperty(
+      'relative'
+    )
+  })
+})
+
+describe('SearchParamsFormOwnProps', () => {
+  it('contains the preserve-options keys and the fetcher prop', () => {
+    expectTypeOf<SearchParamsFormOwnProps>().toHaveProperty('preserve')
+    expectTypeOf<SearchParamsFormOwnProps>().toHaveProperty('customValues')
+    expectTypeOf<SearchParamsFormOwnProps>().toHaveProperty('fetcher')
+  })
+
+  it('is assignable into SearchParamsFormProps', () => {
+    expectTypeOf<SearchParamsFormOwnProps>().toMatchTypeOf<SearchParamsFormProps>()
+  })
+})
+
+describe('redirectPathWithSearchParams export', () => {
+  it('is reachable from the adapter entry with the expected signature', () => {
+    expectTypeOf(adapter.redirectPathWithSearchParams).parameters.toEqualTypeOf<
+      [Request, string, Parameters<typeof adapter.preserveSearchParams>[1]?]
+    >()
+    expectTypeOf(
+      adapter.redirectPathWithSearchParams
+    ).returns.toEqualTypeOf<string>()
   })
 })
