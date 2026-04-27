@@ -2,7 +2,7 @@
 
 Preserve URL search params across navigations and form submissions in React Router v7+ apps.
 
-The wrappers read the current location automatically with `useLocation()`, so you don't have to thread the URL through your component tree. Drop them in where you'd use a regular `<Link>` or `<Form>` and pagination, filters, sort order, and tab state survive every click.
+The wrappers read the current location automatically with `useLocation()`, so you don't have to thread the URL through your component tree. Drop them in where you'd use a regular `<Link>` or `<Form>`, and your pagination, filters, sort, and tab state stick around across navigations.
 
 ## Install
 
@@ -12,7 +12,7 @@ pnpm add @preserve-search-params/react-router
 
 `react` (>=18) and `react-router` (>=7) are peer dependencies.
 
-## A 30-second taste
+## Quick example
 
 ```tsx
 import { SearchParamsLink } from '@preserve-search-params/react-router'
@@ -22,13 +22,13 @@ import { SearchParamsLink } from '@preserve-search-params/react-router'
 // → /items/123?page=2&filter=active
 ```
 
-Everything else is a variation on the same theme: tell the wrapper which params to preserve, and which to override.
+The rest of this README is variations: which params to preserve, which to override.
 
 ## Cookbook
 
 ### Open a detail page (preserve everything)
 
-The default. Every param in the current URL flows through to the destination, so the back button drops the user back exactly where they were.
+The default. Every param in the current URL flows through to the destination, so the back button takes the user to the exact same view.
 
 ```tsx
 <SearchParamsLink to="/items/123">Open</SearchParamsLink>
@@ -132,7 +132,7 @@ If `StyledLink` requires `variant`, the type-checker requires it here too. The m
 
 ### Navigate programmatically
 
-`useResolvedPathWithSearchParams` returns a `Path` object with the preserved `search` baked in. Hand it to `useNavigate()` or any RR primitive that accepts a `Path`.
+`useResolvedPathWithSearchParams` returns a `Path` object with the preserved `search` already on it. Hand it to `useNavigate()` or any RR primitive that takes a `Path`.
 
 ```tsx
 import { useNavigate } from 'react-router'
@@ -275,7 +275,7 @@ Our own keys (`to`, `relative`, `preserve`, `customValues`, `component`, `childr
 
 ### The mechanism
 
-The whole apparatus is a single `PropsOf<T>` utility plus an `Omit`:
+It's a `PropsOf<T>` utility plus one `Omit`:
 
 ```ts
 type ElementOrComponent =

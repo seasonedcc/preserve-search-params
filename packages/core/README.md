@@ -19,7 +19,7 @@ Input is a `URLSearchParams`. Output is a new `URLSearchParams`. Sync, pure, no 
 
 ## `preserveSearchParams(search, options?)`
 
-Four shapes of call cover everything.
+The four useful calls, in order:
 
 ### Preserve everything (default)
 
@@ -65,7 +65,7 @@ preserveSearchParams(new URLSearchParams('page=2&tab=info&drop=this'), {
 
 ## `customValues` is recursive
 
-Nested objects and arrays serialize with bracket notation. Filter shapes of arbitrary depth go straight onto the URL.
+Nested objects and arrays serialize with bracket notation. Any depth works.
 
 ```ts
 preserveSearchParams(new URLSearchParams(), {

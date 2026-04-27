@@ -12,7 +12,7 @@ pnpm add @preserve-search-params/next
 
 `react` (>=18) and `next` (>=14) are peer dependencies.
 
-## A 30-second taste
+## Quick example
 
 ```tsx
 import { SearchParamsLink } from '@preserve-search-params/next'
@@ -24,7 +24,7 @@ import { SearchParamsLink } from '@preserve-search-params/next'
 // → /items/123?page=2&filter=active
 ```
 
-The component shape is the same everywhere. The only thing that varies between contexts is how you obtain `current`.
+The component is the same everywhere. What changes between contexts is how you build `current`.
 
 ## Reading the current URL
 
@@ -96,7 +96,7 @@ Read once per page, thread the result down. The recipes below all assume `curren
 
 ### Open a detail page (preserve everything)
 
-The default. Every param flows through to the destination, so the back button drops the user back exactly where they were.
+The default. Every param flows through to the destination, so the back button takes the user to the exact same view.
 
 ```tsx
 <SearchParamsLink href="/items/123" currentSearchParams={current}>
@@ -207,7 +207,7 @@ If `StyledLink` requires `variant`, the type-checker requires it here too. The m
 
 ### Prefetch GET targets with `next/form`
 
-Next 15+ ships a `Form` component that prefetches the action URL on hover/focus. Pass it as `component` to get the same prefetch behavior on a search-params-preserving form.
+Next 15+ ships a `Form` component that prefetches the action URL on hover and focus. Pass it as `component` and the prefetch works on the form too.
 
 ```tsx
 import Form from 'next/form'

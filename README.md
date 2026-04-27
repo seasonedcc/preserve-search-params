@@ -4,11 +4,11 @@ Preserve URL search params across navigations and form submissions.
 
 When a user filters a list, paginates, then clicks into a detail page, the back button should bring them back to exactly what they were looking at. Doing that by hand — threading filters and page numbers through every link, form, redirect, and router push — is enough work that most apps just skip it. The URL becomes lossy, and pagination, filter, sort, and tab state vanish on every navigation.
 
-These libraries make preservation second nature: the URL becomes the source of truth, and surviving a round-trip is a one-prop affair.
+These libraries fix that. The URL becomes your single source of truth, and one prop keeps it intact across navigations.
 
-## A 30-second taste
+## Quick example
 
-The same idea, in each adapter's idiom.
+The same idea in each adapter:
 
 ### React Router
 
@@ -91,7 +91,7 @@ The wrappers exist where there's real boilerplate to hide (reading the URL, comp
 
 ## Who built this
 
-Built by [Seasoned](https://seasoned.cc), extracted from production usage in our internal app framework after the same preservation logic kept showing up on every list-heavy page. Released as a standalone library so other apps stop having to choose between good UX and shipping the feature.
+Built by [Seasoned](https://seasoned.cc). We extracted it from our internal app framework after writing the same preservation logic too many times, and pulled it out so we (and you) stop writing it from scratch.
 
 ## License
 
