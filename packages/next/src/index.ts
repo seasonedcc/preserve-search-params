@@ -10,8 +10,11 @@ export type {
   SearchParamsFormProps,
 } from './search-params-form'
 
+export type { ElementOrComponent, PropsOf } from './types'
+
 export {
   preserveSearchParams,
+  redirectPathWithSearchParams,
   serializeToSearchParams,
 } from 'preserve-search-params'
 export type {

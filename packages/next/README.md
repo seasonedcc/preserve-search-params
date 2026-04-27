@@ -251,24 +251,22 @@ function GoToObservations() {
 
 ### Server Action redirect
 
-Server Actions don't have direct access to the current URL, so read the `referer` header to recover it. If the action is invoked through a redirect (no referer), fall back to an empty `URLSearchParams`.
+Server Actions don't have direct access to the current URL, so read the `referer` header to recover it, then hand it to `redirectPathWithSearchParams` along with the target path.
 
 ```ts
 'use server'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { preserveSearchParams } from '@preserve-search-params/next'
+import { redirectPathWithSearchParams } from '@preserve-search-params/next'
 
 export async function archiveItem(id: string) {
   // ... mutation
-  const referer = (await headers()).get('referer')
-  const search = referer
-    ? new URL(referer).searchParams
-    : new URLSearchParams()
-  const next = preserveSearchParams(search, {
-    customValues: { page: null },
-  }).toString()
-  redirect(`/items?${next}`)
+  const referer = (await headers()).get('referer') ?? 'http://x/'
+  redirect(
+    redirectPathWithSearchParams(new Request(referer), '/items', {
+      customValues: { page: null },
+    })
+  )
 }
 ```
 
@@ -276,15 +274,17 @@ export async function archiveItem(id: string) {
 
 ```ts
 import type { GetServerSideProps } from 'next'
-import { preserveSearchParams } from '@preserve-search-params/next'
+import { redirectPathWithSearchParams } from '@preserve-search-params/next'
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const url = new URL(ctx.req.url ?? '/', 'http://x')
-  const search = preserveSearchParams(url.searchParams, {
-    customValues: { page: null },
-  }).toString()
   return {
-    redirect: { destination: `/items?${search}`, permanent: false },
+    redirect: {
+      destination: redirectPathWithSearchParams(new Request(url), '/items', {
+        customValues: { page: null },
+      }),
+      permanent: false,
+    },
   }
 }
 ```
@@ -330,14 +330,35 @@ GET-method form wrapper. Renders one hidden `<input>` per preserved param.
 
 All other props pass through to the underlying form (or `component` if supplied).
 
+### `redirectPathWithSearchParams(request, path, options?)`
+
+```ts
+function redirectPathWithSearchParams(
+  request: Request,
+  path: string,
+  options?: SearchParamsPreserveOptions
+): string
+```
+
+Builds a redirect destination from an incoming `Request` and a target path. Preserves the request's search params (subject to `options.preserve`) and merges any params already on `path` via `customValues`. `options.customValues` overrides path-supplied params with the same key. The path's hash is preserved.
+
+In Server Actions, where the current URL is not part of the call, build a `Request` from the `referer` header — see the Server Action redirect cookbook entry above.
+
 ### Re-exports
 
 ```ts
 import {
   preserveSearchParams,
+  redirectPathWithSearchParams,
   serializeToSearchParams,
 } from '@preserve-search-params/next'
 import type {
+  ElementOrComponent,
+  PropsOf,
+  SearchParamsFormOwnProps,
+  SearchParamsFormProps,
+  SearchParamsLinkOwnProps,
+  SearchParamsLinkProps,
   SearchParamsPreserveOptions,
   SearchParamsValue,
   SearchParamsValues,

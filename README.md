@@ -86,7 +86,7 @@ URL state stays in the URL, even when your filter shape grows. No client-side st
 | Click a `<Link>` | `<SearchParamsLink>` (auto-reads URL) | `<SearchParamsLink>` + `currentSearchParams` |
 | Submit a GET form | `<SearchParamsForm>` | `<SearchParamsForm>` + `currentSearchParams` |
 | `useNavigate` / `router.push` | `useResolvedPathWithSearchParams` | `preserveSearchParams(...).toString()` |
-| Server-side `redirect()` | `preserveSearchParams(new URL(request.url).searchParams).toString()` | Same shape, against the request you have |
+| Server-side `redirect()` | `redirectPathWithSearchParams(request, '/dest', opts)` | Same — works against any `Request`, including one built from a Server Action's `referer` |
 | Build a URL string | `preserveSearchParams(...).toString()` | `preserveSearchParams(...).toString()` |
 
 The wrappers exist where there's real boilerplate to hide (reading the URL, computing the new href, rendering hidden inputs). For everything else, the core function composes cleanly with whatever your framework already provides.

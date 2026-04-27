@@ -172,21 +172,23 @@ Note: when `fetcher` is supplied, the form does not auto-preserve the current UR
 
 ### Server-side `redirect()` after a mutation
 
-Read the request URL's `searchParams`, pipe through `preserveSearchParams`, and feed the result into RR's `redirect()`.
+`redirectPathWithSearchParams` builds the destination string from the request and a target path, preserving the request's params and merging anything already on the path. Pass the result straight to RR's `redirect()`.
 
 ```ts
 import { redirect, type ActionFunctionArgs } from 'react-router'
-import { preserveSearchParams } from '@preserve-search-params/react-router'
+import { redirectPathWithSearchParams } from '@preserve-search-params/react-router'
 
 export async function action({ request }: ActionFunctionArgs) {
   // ... mutation
-  const search = preserveSearchParams(
-    new URL(request.url).searchParams,
-    { customValues: { page: null } }
-  ).toString()
-  return redirect(`/items?${search}`)
+  return redirect(
+    redirectPathWithSearchParams(request, '/items', {
+      customValues: { page: null },
+    })
+  )
 }
 ```
+
+If you'd rather build the query string yourself, the lower-level `preserveSearchParams(new URL(request.url).searchParams, opts).toString()` recipe still works.
 
 ### Build a URL string
 
@@ -240,17 +242,37 @@ function useResolvedPathWithSearchParams(
 
 Wraps RR's `useResolvedPath` and replaces the `search` portion with the preserved query string. Use it for imperative navigation (`useNavigate`), prefetch URLs, or anywhere a `Path` is expected.
 
+### `redirectPathWithSearchParams(request, path, options?)`
+
+```ts
+function redirectPathWithSearchParams(
+  request: Request,
+  path: string,
+  options?: SearchParamsPreserveOptions
+): string
+```
+
+Builds a redirect destination from an incoming `Request` and a target path. Preserves the request's search params (subject to `options.preserve`) and merges any params already on `path` via `customValues`. `options.customValues` overrides path-supplied params with the same key. The path's hash is preserved.
+
 ### Re-exports
 
 ```ts
 import {
   preserveSearchParams,
+  redirectPathWithSearchParams,
   serializeToSearchParams,
 } from '@preserve-search-params/react-router'
 import type {
+  ElementOrComponent,
+  PropsOf,
+  SearchParamsFormOwnProps,
+  SearchParamsFormProps,
+  SearchParamsLinkOwnProps,
+  SearchParamsLinkProps,
   SearchParamsPreserveOptions,
   SearchParamsValue,
   SearchParamsValues,
+  UseResolvedPathWithSearchParamsOptions,
 } from '@preserve-search-params/react-router'
 ```
 

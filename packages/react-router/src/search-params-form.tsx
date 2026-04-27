@@ -9,10 +9,11 @@ import {
   useLocation,
 } from 'react-router'
 
-type SearchParamsFormProps = FormProps &
-  SearchParamsPreserveOptions & {
-    fetcher?: FetcherWithComponents<unknown>
-  }
+type SearchParamsFormOwnProps = SearchParamsPreserveOptions & {
+  fetcher?: FetcherWithComponents<unknown>
+}
+
+type SearchParamsFormProps = FormProps & SearchParamsFormOwnProps
 
 function SearchParamsForm({
   fetcher,
@@ -49,4 +50,4 @@ function SearchParamsForm({
 }
 
 export { SearchParamsForm }
-export type { SearchParamsFormProps }
+export type { SearchParamsFormProps, SearchParamsFormOwnProps }

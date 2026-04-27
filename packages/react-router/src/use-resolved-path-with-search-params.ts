@@ -1,14 +1,21 @@
 import { preserveSearchParams } from 'preserve-search-params'
 import type { SearchParamsPreserveOptions } from 'preserve-search-params'
-import { type Path, type To, useLocation, useResolvedPath } from 'react-router'
+import {
+  type Path,
+  type RelativeRoutingType,
+  type To,
+  useLocation,
+  useResolvedPath,
+} from 'react-router'
 
-type RelativeRoutingType = 'route' | 'path'
-
-type Options = SearchParamsPreserveOptions & {
+type UseResolvedPathWithSearchParamsOptions = SearchParamsPreserveOptions & {
   relative?: RelativeRoutingType
 }
 
-function useResolvedPathWithSearchParams(to: To, options: Options = {}): Path {
+function useResolvedPathWithSearchParams(
+  to: To,
+  options: UseResolvedPathWithSearchParamsOptions = {}
+): Path {
   const location = useLocation()
   const search = new URLSearchParams(location.search)
   const { relative, ...preserveOptions } = options
@@ -21,3 +28,4 @@ function useResolvedPathWithSearchParams(to: To, options: Options = {}): Path {
 }
 
 export { useResolvedPathWithSearchParams }
+export type { UseResolvedPathWithSearchParamsOptions }

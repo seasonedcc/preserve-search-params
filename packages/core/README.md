@@ -129,6 +129,41 @@ const search = preserveSearchParams(url.searchParams, {
 return redirect(`/items?${search}`)
 ```
 
+For the common case of merging an incoming request's params with a target path, the `redirectPathWithSearchParams` helper below removes the boilerplate.
+
+## `redirectPathWithSearchParams(request, path, options?)`
+
+Builds a redirect destination string from a `Request` and a target path, preserving the request's search params and merging in any params already on the target path.
+
+```ts
+import { redirectPathWithSearchParams } from 'preserve-search-params'
+
+// request.url = https://example.com/items?page=2&filter=active
+const dest = redirectPathWithSearchParams(request, '/items/123#header', {
+  customValues: { tab: 'observations' },
+})
+// → /items/123?page=2&filter=active&tab=observations#header
+return redirect(dest)
+```
+
+Behavior:
+
+- The request's search params are preserved according to `options.preserve` (default `'all'`).
+- Search params already on `path` are merged in via `customValues` semantics — single-valued keys flow through as strings, repeated keys flow through as arrays (and serialize as `key[]=...`).
+- `options.customValues` overrides anything with the same key from the path.
+- The path's hash (`#section`) is preserved as-is.
+
+Use it inside framework redirect helpers:
+
+```ts
+// React Router
+return redirect(redirectPathWithSearchParams(request, '/items', { customValues: { page: null } }))
+
+// Next.js Server Action — read the referer for the originating URL
+const referer = (await headers()).get('referer') ?? 'http://x/'
+redirect(redirectPathWithSearchParams(new Request(referer), '/items', { customValues: { page: null } }))
+```
+
 ## `serializeToSearchParams(params, value, prefix)`
 
 The lower-level utility behind `customValues`. It mutates `params` in place by appending `value` under `prefix`, using the same recursive bracket notation.
@@ -155,6 +190,12 @@ function preserveSearchParams(
   search: URLSearchParams,
   options?: SearchParamsPreserveOptions
 ): URLSearchParams
+
+function redirectPathWithSearchParams(
+  request: Request,
+  path: string,
+  options?: SearchParamsPreserveOptions
+): string
 
 function serializeToSearchParams(
   params: URLSearchParams,
