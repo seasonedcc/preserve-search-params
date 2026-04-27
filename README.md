@@ -1,47 +1,60 @@
 # preserve-search-params
 
-A family of small, composable libraries for **preserving URL search params** across navigations and form submissions in web apps. The URL becomes the source of truth for filter, sort, pagination, and tab state, and surviving round-trips between list ↔ detail pages becomes a one-prop affair.
+Preserve URL search params across navigations and form submissions.
 
-## Why
+When a user filters a list, paginates, then clicks into a detail page, the back button should bring them back to exactly what they were looking at. Doing that by hand — threading filters and page numbers through every link, form, redirect, and router push — is enough work that most apps just skip it. The URL becomes lossy, and pagination, filter, sort, and tab state vanish on every navigation.
 
-Building list-heavy CRUD apps where users filter, sort, paginate, click into a detail page, and come back — without losing their place — is tedious without helpers. Most apps end up sacrificing UX because preserving search params manually is too much work.
+These libraries make preservation second nature: the URL becomes the source of truth, and surviving a round-trip is a one-prop affair.
 
-These libraries make it second nature.
+## A 30-second taste
 
-## Packages
+The same idea, in each adapter's idiom.
 
-| Package | Description |
-|---|---|
-| [`preserve-search-params`](packages/core) | Core. Zero-dependency, framework-agnostic. A single function: `preserveSearchParams(URLSearchParams, options) → URLSearchParams`. |
-| [`@preserve-search-params/react-router`](packages/react-router) | React Router v7+ adapter. `<SearchParamsLink>`, `<SearchParamsForm>`, `useResolvedPathWithSearchParams`. |
-| [`@preserve-search-params/next`](packages/next) | Next.js adapter. Pure components for App Router *and* Pages Router, server components *and* client components. |
-
-## Quick taste
+### React Router
 
 ```tsx
-// React Router
+// Rendered on /items?page=2&filter=active
 <SearchParamsLink to="/items/123">Open</SearchParamsLink>
-// On /items?page=2&filter=active → href becomes /items/123?page=2&filter=active
+// → /items/123?page=2&filter=active
+```
 
-// Next.js
+### Next.js
+
+```tsx
+// current = new URLSearchParams('page=2&filter=active')
 <SearchParamsLink href="/items/123" currentSearchParams={current}>
   Open
 </SearchParamsLink>
+// → /items/123?page=2&filter=active
 ```
 
-```ts
-// The core, reusable everywhere
-import { preserveSearchParams } from 'preserve-search-params'
+## Mental model
 
-const next = preserveSearchParams(new URLSearchParams('page=2&filter=active'), {
-  customValues: { tab: 'observations', page: null }, // null clears
-})
-// tab=observations&filter=active
-```
+Read the current URL once. Hand it to the wrappers. They preserve every param by default, or only the ones you list, and `customValues` sets, overrides, or clears specific keys (including nested objects). Done.
+
+## Pick your adapter
+
+| Package | When to use | Install |
+|---|---|---|
+| [`@preserve-search-params/react-router`](packages/react-router) | React Router v7+ apps | `pnpm add @preserve-search-params/react-router` |
+| [`@preserve-search-params/next`](packages/next) | Next.js apps (App Router and Pages Router) | `pnpm add @preserve-search-params/next` |
+| [`preserve-search-params`](packages/core) | Anything else, or when composing manually | `pnpm add preserve-search-params` |
+
+Each adapter re-exports the core, so you only need one import path in app code.
+
+## Behavior at a glance
+
+| `preserve` value | Effect |
+|---|---|
+| `'all'` *(default)* | Keep every param in the input. |
+| `[]` | Drop everything. |
+| `['tab', 'q']` | Keep only these. Exact, case-sensitive match. |
+
+`customValues` runs after preservation. It sets, overrides, or clears specific keys (set a key to `null` to clear). Recursive for nested objects and arrays.
 
 ## URL-as-state for filter objects
 
-Recursive serialization of nested objects and arrays makes URL-as-state ergonomic for any shape:
+Recursive serialization makes the URL a viable home for any filter shape, not just flat key-value pairs:
 
 ```ts
 preserveSearchParams(new URLSearchParams(), {
@@ -53,49 +66,32 @@ preserveSearchParams(new URLSearchParams(), {
 // filter%5Bstatus%5D=active&filter%5Btags%5D%5B%5D=urgent&filter%5Btags%5D%5B%5D=review&page=2
 ```
 
-## Behavior
+Decoded for readability:
 
-| `preserve` value | Effect |
-|---|---|
-| `'all'` *(default)* | Keep every param in the input. |
-| `[]` | Drop everything. |
-| `['tab', 'q']` | Keep only these. Exact, case-sensitive match. |
+```
+filter[status]=active
+filter[tags][]=urgent
+filter[tags][]=review
+page=2
+```
 
-`customValues` runs after preservation. It sets, overrides, or — with `null` — clears specific keys. Works recursively for nested objects and arrays.
+URL state stays in the URL, even when your filter shape grows. No client-side store, no server-side session blob, no extra round-trip.
 
 ## Use cases covered
 
-| Case | Mechanism |
-|---|---|
-| Click a `<Link>` | `<SearchParamsLink>` wrapper (each adapter). |
-| Submit a (GET) form | `<SearchParamsForm>` wrapper (each adapter). |
-| `router.push` / `router.replace` | Compose the core with your framework's router primitive. |
-| Server-side `redirect()` | Compose the core with your framework's redirect primitive. |
-| Build a URL string | Use `URLSearchParams.toString()` on the core's return. |
+| Situation | React Router | Next.js |
+|---|---|---|
+| Click a `<Link>` | `<SearchParamsLink>` (auto-reads URL) | `<SearchParamsLink>` + `currentSearchParams` |
+| Submit a GET form | `<SearchParamsForm>` | `<SearchParamsForm>` + `currentSearchParams` |
+| `useNavigate` / `router.push` | `useResolvedPathWithSearchParams` | `preserveSearchParams(...).toString()` |
+| Server-side `redirect()` | `preserveSearchParams(new URL(request.url).searchParams).toString()` | Same shape, against the request you have |
+| Build a URL string | `preserveSearchParams(...).toString()` | `preserveSearchParams(...).toString()` |
 
-The wrappers exist where there's real boilerplate to hide (reading the URL, computing the new href, rendering hidden inputs). Imperative cases compose the core with whatever your framework already provides — no invented domain language.
+The wrappers exist where there's real boilerplate to hide (reading the URL, computing the new href, rendering hidden inputs). For everything else, the core function composes cleanly with whatever your framework already provides.
 
-## Install
+## Who built this
 
-```bash
-pnpm add preserve-search-params                         # core only
-pnpm add @preserve-search-params/react-router           # React Router apps
-pnpm add @preserve-search-params/next                   # Next.js apps
-```
-
-Each adapter re-exports the core, so you only need one import path in app code.
-
-## Development
-
-```bash
-pnpm install
-pnpm build
-pnpm test
-pnpm tsc
-pnpm lint
-```
-
-The monorepo uses pnpm workspaces, Turbo for task orchestration, and Changesets for versioning.
+Built by [Seasoned](https://seasoned.cc), extracted from production usage in our internal app framework after the same preservation logic kept showing up on every list-heavy page. Released as a standalone library so other apps stop having to choose between good UX and shipping the feature.
 
 ## License
 
