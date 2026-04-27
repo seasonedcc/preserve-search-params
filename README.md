@@ -34,6 +34,8 @@ Read the current URL once. Hand it to the wrappers. They preserve every param by
 
 ## Pick your adapter
 
+Each package has its own README with the full cookbook, API reference, and TypeScript notes. Pick the one for your framework and read it next.
+
 | Package | When to use | Install |
 |---|---|---|
 | [`@preserve-search-params/react-router`](packages/react-router) | React Router v7+ apps | `pnpm add @preserve-search-params/react-router` |
