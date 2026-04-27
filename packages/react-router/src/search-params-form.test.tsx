@@ -1,6 +1,11 @@
 import { render } from '@testing-library/react'
-import type * as React from 'react'
-import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
+import * as React from 'react'
+import {
+  Outlet,
+  RouterProvider,
+  createMemoryRouter,
+  useFetcher,
+} from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { SearchParamsForm } from './search-params-form'
 
@@ -84,5 +89,102 @@ describe('SearchParamsForm', () => {
       ])
     )
     expect(hidden.find((h) => h.name === 'drop')).toBeUndefined()
+  })
+
+  it('attaches a ref to the rendered <form>', () => {
+    const ref = React.createRef<HTMLFormElement>()
+    renderAt(
+      '/items',
+      <SearchParamsForm action="/items" ref={ref}>
+        child
+      </SearchParamsForm>
+    )
+    expect(ref.current).toBeInstanceOf(HTMLFormElement)
+  })
+
+  it('renders a custom form component supplied via `component`', () => {
+    const CustomForm = ({
+      children,
+      'data-custom': dataCustom,
+      ...props
+    }: React.FormHTMLAttributes<HTMLFormElement> & {
+      'data-custom'?: boolean
+    }) => (
+      <form {...props} data-custom={dataCustom}>
+        {children}
+      </form>
+    )
+
+    const { container } = renderAt(
+      '/items?page=2',
+      <SearchParamsForm action="/items" component={CustomForm} data-custom>
+        child
+      </SearchParamsForm>
+    )
+
+    expect(container.querySelector('form')).toHaveAttribute('data-custom')
+    expect(readHidden(container)).toEqual([{ name: 'page', value: '2' }])
+  })
+
+  it('forwards a ref through to a custom component', () => {
+    const CustomForm = React.forwardRef<
+      HTMLFormElement,
+      React.FormHTMLAttributes<HTMLFormElement>
+    >(({ children, ...props }, ref) => (
+      <form ref={ref} {...props}>
+        {children}
+      </form>
+    ))
+    CustomForm.displayName = 'CustomForm'
+
+    const ref = React.createRef<HTMLFormElement>()
+    renderAt(
+      '/items',
+      <SearchParamsForm action="/items" component={CustomForm} ref={ref}>
+        child
+      </SearchParamsForm>
+    )
+    expect(ref.current).toBeInstanceOf(HTMLFormElement)
+  })
+
+  it('migration: works with component={fetcher.Form} and forwards ref', () => {
+    const ref = React.createRef<HTMLFormElement>()
+
+    function Child() {
+      const fetcher = useFetcher()
+      return (
+        <SearchParamsForm
+          action="/items"
+          component={fetcher.Form}
+          ref={ref}
+          preserve={[]}
+        >
+          child
+        </SearchParamsForm>
+      )
+    }
+
+    const router = createMemoryRouter(
+      [
+        {
+          path: '/',
+          element: <Outlet />,
+          children: [
+            {
+              path: 'items',
+              action: () => null,
+              element: <div>items</div>,
+            },
+            { path: '*', element: <Child /> },
+          ],
+        },
+      ],
+      { initialEntries: ['/page?page=2'] }
+    )
+    const { container } = render(<RouterProvider router={router} />)
+
+    expect(container.querySelector('form')).toBeInstanceOf(HTMLFormElement)
+    expect(ref.current).toBeInstanceOf(HTMLFormElement)
+    expect(readHidden(container)).toEqual([])
   })
 })

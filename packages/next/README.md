@@ -10,7 +10,7 @@ The components are pure (no `'use client'`) and accept the current URL's search 
 pnpm add @preserve-search-params/next
 ```
 
-`react` (>=18) and `next` (>=14) are peer dependencies.
+`react` (>=19) and `next` (>=14) are peer dependencies.
 
 ## Quick example
 

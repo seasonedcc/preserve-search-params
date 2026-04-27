@@ -10,7 +10,7 @@ The wrappers read the current location automatically with `useLocation()`, so yo
 pnpm add @preserve-search-params/react-router
 ```
 
-`react` (>=18) and `react-router` (>=7) are peer dependencies.
+`react` (>=19) and `react-router` (>=7) are peer dependencies.
 
 ## Quick example
 
@@ -149,7 +149,7 @@ function GoToObservations() {
 
 ### Submit through a fetcher
 
-Use a fetcher when you want to revalidate data without leaving the current page (typical for inline filter chips, or pagination buttons that reload a list in place).
+Use a fetcher when you want to revalidate data without leaving the current page (typical for inline filter chips, or pagination buttons that reload a list in place). Pass `fetcher.Form` via the polymorphic `component` prop.
 
 ```tsx
 import { useFetcher } from 'react-router'
@@ -158,8 +158,8 @@ function ArchivedChip() {
   const fetcher = useFetcher()
   return (
     <SearchParamsForm
-      fetcher={fetcher}
       action="/items"
+      component={fetcher.Form}
       customValues={{ status: 'archived', page: null }}
     >
       <button type="submit">Archived</button>
@@ -168,7 +168,7 @@ function ArchivedChip() {
 }
 ```
 
-Note: when `fetcher` is supplied, the form does not auto-preserve the current URL's params. The request carries only `customValues` plus form fields. Use the non-fetcher variant when you want the current URL preserved into the submission.
+If you don't want the current URL's params to flow into the fetcher submission, opt out explicitly with `preserve={[]}`.
 
 ### Server-side `redirect()` after a mutation
 
@@ -226,10 +226,10 @@ GET-method form wrapper. Renders one hidden `<input>` per preserved param.
 | `method` | `'get'` (default) | RR `FormProps`. |
 | `preserve` | `'all' \| string[]` | Default `'all'`. |
 | `customValues` | `SearchParamsValues` | Set, override, or clear keys (recursive). |
-| `fetcher` | `FetcherWithComponents<unknown>` | Optional. Submit through a fetcher instead of a full navigation. See note in the cookbook. |
+| `component` | `ElementOrComponent` | Optional. Swap the underlying Form (e.g. `fetcher.Form`). Inherits its props. |
 | `children` | `React.ReactNode` | Form contents. |
 
-All other props pass through to RR's `Form` (or `fetcher.Form` when a fetcher is supplied).
+All other props pass through to RR's `Form` (or `component` if supplied).
 
 ### `useResolvedPathWithSearchParams(to, options?)`
 

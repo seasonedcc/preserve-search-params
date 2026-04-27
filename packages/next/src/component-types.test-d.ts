@@ -101,6 +101,22 @@ describe('SearchParamsFormProps inference', () => {
   })
 })
 
+describe('ref forwarding', () => {
+  it('SearchParamsLinkProps.ref attaches to HTMLAnchorElement', () => {
+    expectTypeOf<SearchParamsLinkProps>().toHaveProperty('ref')
+    expectTypeOf<(el: HTMLAnchorElement | null) => void>().toMatchTypeOf<
+      NonNullable<SearchParamsLinkProps['ref']>
+    >()
+  })
+
+  it('SearchParamsFormProps.ref attaches to HTMLFormElement', () => {
+    expectTypeOf<SearchParamsFormProps>().toHaveProperty('ref')
+    expectTypeOf<(el: HTMLFormElement | null) => void>().toMatchTypeOf<
+      NonNullable<SearchParamsFormProps['ref']>
+    >()
+  })
+})
+
 describe('redirectPathWithSearchParams export', () => {
   it('is reachable from the adapter entry with the expected signature', () => {
     expectTypeOf(adapter.redirectPathWithSearchParams).parameters.toEqualTypeOf<

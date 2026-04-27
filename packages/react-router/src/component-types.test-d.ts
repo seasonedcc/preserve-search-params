@@ -100,14 +100,65 @@ describe('UseResolvedPathWithSearchParamsOptions', () => {
 })
 
 describe('SearchParamsFormOwnProps', () => {
-  it('contains the preserve-options keys and the fetcher prop', () => {
+  it('contains the preserve-options keys', () => {
     expectTypeOf<SearchParamsFormOwnProps>().toHaveProperty('preserve')
     expectTypeOf<SearchParamsFormOwnProps>().toHaveProperty('customValues')
-    expectTypeOf<SearchParamsFormOwnProps>().toHaveProperty('fetcher')
+  })
+
+  it('no longer carries the fetcher prop', () => {
+    expectTypeOf<SearchParamsFormOwnProps>().not.toHaveProperty('fetcher')
   })
 
   it('is assignable into SearchParamsFormProps', () => {
     expectTypeOf<SearchParamsFormOwnProps>().toMatchTypeOf<SearchParamsFormProps>()
+  })
+})
+
+describe('SearchParamsFormProps inference', () => {
+  it('default-generic resolves to RR FormProps shape plus our own', () => {
+    type Props = SearchParamsFormProps
+    expectTypeOf<Props>().toHaveProperty('preserve')
+    expectTypeOf<Props>().toHaveProperty('customValues')
+    expectTypeOf<Props>().toHaveProperty('action')
+    expectTypeOf<Props>().toHaveProperty('method')
+    expectTypeOf<Props>().toHaveProperty('onSubmit')
+  })
+
+  it('passing a custom component flows its required props through', () => {
+    type CustomForm = React.FC<{
+      action: string
+      variant: 'a' | 'b'
+      children?: React.ReactNode
+    }>
+    type Props = SearchParamsFormProps<CustomForm>
+    expectTypeOf<Props>().toHaveProperty('variant')
+    expectTypeOf<Props['variant']>().toEqualTypeOf<'a' | 'b'>()
+  })
+
+  it('forwardRef components work as `component`', () => {
+    type CustomForm = React.ForwardRefExoticComponent<
+      React.PropsWithoutRef<{ action: string; size: 'sm' | 'lg' }> &
+        React.RefAttributes<HTMLFormElement>
+    >
+    type Props = SearchParamsFormProps<CustomForm>
+    expectTypeOf<Props>().toHaveProperty('size')
+    expectTypeOf<Props['size']>().toEqualTypeOf<'sm' | 'lg'>()
+  })
+})
+
+describe('ref forwarding', () => {
+  it('SearchParamsLinkProps.ref attaches to HTMLAnchorElement', () => {
+    expectTypeOf<SearchParamsLinkProps>().toHaveProperty('ref')
+    expectTypeOf<(el: HTMLAnchorElement | null) => void>().toMatchTypeOf<
+      NonNullable<SearchParamsLinkProps['ref']>
+    >()
+  })
+
+  it('SearchParamsFormProps.ref attaches to HTMLFormElement', () => {
+    expectTypeOf<SearchParamsFormProps>().toHaveProperty('ref')
+    expectTypeOf<(el: HTMLFormElement | null) => void>().toMatchTypeOf<
+      NonNullable<SearchParamsFormProps['ref']>
+    >()
   })
 })
 

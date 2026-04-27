@@ -38,7 +38,7 @@
     "preserve-search-params": "workspace:*"
   },
   "peerDependencies": {
-    "react": ">=18",
+    "react": ">=19",
     "react-router": ">=7"
   },
   "devDependencies": {

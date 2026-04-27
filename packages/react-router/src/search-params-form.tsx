@@ -2,29 +2,29 @@ import {
   type SearchParamsPreserveOptions,
   preserveSearchParams,
 } from 'preserve-search-params'
-import {
-  type FetcherWithComponents,
-  type FormProps,
-  Form as FrameworkForm,
-  useLocation,
-} from 'react-router'
+import type * as React from 'react'
+import { Form as DefaultForm, useLocation } from 'react-router'
+import type { ElementOrComponent, PropsOf } from './types'
 
 type SearchParamsFormOwnProps = SearchParamsPreserveOptions & {
-  fetcher?: FetcherWithComponents<unknown>
+  children?: React.ReactNode
 }
 
-type SearchParamsFormProps = FormProps & SearchParamsFormOwnProps
+type SearchParamsFormProps<C extends ElementOrComponent = typeof DefaultForm> =
+  SearchParamsFormOwnProps & { component?: C } & Omit<
+      PropsOf<C>,
+      keyof SearchParamsFormOwnProps | 'component'
+    >
 
-function SearchParamsForm({
-  fetcher,
+function SearchParamsForm<C extends ElementOrComponent = typeof DefaultForm>({
   preserve,
   customValues,
+  component,
   children,
   ...props
-}: SearchParamsFormProps) {
-  const Form = fetcher?.Form ?? FrameworkForm
+}: SearchParamsFormProps<C>) {
   const location = useLocation()
-  const search = new URLSearchParams(fetcher ? undefined : location.search)
+  const search = new URLSearchParams(location.search)
   const inputs: { key: string; value: string }[] = []
 
   preserveSearchParams(search, { preserve, customValues }).forEach(
@@ -33,8 +33,9 @@ function SearchParamsForm({
     }
   )
 
+  const Component = (component ?? DefaultForm) as React.ElementType
   return (
-    <Form method="get" {...props}>
+    <Component method="get" {...props}>
       {inputs.map(({ key, value }, index) => (
         <input
           // biome-ignore lint/suspicious/noArrayIndexKey: necessary for repeated-key search params (e.g. order=action&order=asc)
@@ -45,7 +46,7 @@ function SearchParamsForm({
         />
       ))}
       {children}
-    </Form>
+    </Component>
   )
 }
 
